@@ -242,7 +242,17 @@
         },
         "water_heater": {
             "water_heater": {
-                "name": "燃气热水器"
+                "name": "燃气热水器",
+                "state": {
+                    "on": "开启",
+                    "off": "关闭",
+                    "eco": "节能",
+                    "electric": "电加热",
+                    "gas": "燃气",
+                    "heat_pump": "热泵",
+                    "high_demand": "高需求",
+                    "performance": "高性能"
+                }
             }
         }
     }

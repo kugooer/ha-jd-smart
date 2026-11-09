@@ -242,7 +242,17 @@
         },
         "water_heater": {
             "water_heater": {
-                "name": "Water heater"
+                "name": "Water heater",
+                "state": {
+                    "on": "On",
+                    "off": "Off",
+                    "eco": "Eco",
+                    "electric": "Electric",
+                    "gas": "Gas",
+                    "heat_pump": "Heat pump",
+                    "high_demand": "High demand",
+                    "performance": "Performance"
+                }
             }
         }
     }
