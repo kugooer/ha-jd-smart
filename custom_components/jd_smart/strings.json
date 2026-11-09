@@ -164,6 +164,13 @@
             "error_code": {
                 "name": "Error code"
             },
+            "fan_state": {
+                "name": "Fan state",
+                "state": {
+                    "stopped": "Stopped",
+                    "running": "Running"
+                }
+            },
             "flow_state": {
                 "name": "Water flow state",
                 "state": {

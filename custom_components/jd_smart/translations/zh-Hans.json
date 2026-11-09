@@ -164,6 +164,13 @@
             "error_code": {
                 "name": "故障码"
             },
+            "fan_state": {
+                "name": "风机状态",
+                "state": {
+                    "stopped": "停转",
+                    "running": "运转"
+                }
+            },
             "flow_state": {
                 "name": "水流状态",
                 "state": {

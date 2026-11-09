@@ -117,6 +117,15 @@ WATER_HEATER_SENSORS: tuple[JdSmartSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     JdSmartSensorDescription(
+        key="fan_state",
+        stream_id="FanState",
+        translation_key="fan_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=["stopped", "running"],
+        value_map={"0": "stopped", "1": "running"},
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
         key="pump_state",
         stream_id="PumpState",
         translation_key="pump_state",
