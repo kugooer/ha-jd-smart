@@ -10,7 +10,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import JdSmartConfigEntry
-from .const import DEVICE_TYPE_AIR_CONDITIONER
+from .const import DEVICE_TYPE_AIR_CONDITIONER, DEVICE_TYPE_WATER_HEATER
 from .entity import JdSmartEntity
 
 
@@ -33,6 +33,30 @@ SELECTS: tuple[JdSmartSelectDescription, ...] = (
 )
 
 
+# Gas water heaters expose the app's 模式设置 as the Mode stream. Captured
+# values: 13 = 增容 (capacity boost, the default), 8 = 舒适浴 (comfort bath),
+# 9 = 随温感 (ambient tracking). Switching the mode also restores that mode's
+# own target temperature on the device.
+WATER_HEATER_SELECTS: tuple[JdSmartSelectDescription, ...] = (
+    JdSmartSelectDescription(
+        key="mode",
+        stream_id="Mode",
+        translation_key="water_heater_mode",
+        options=["capacity_boost", "comfort_bath", "ambient_tracking"],
+        option_to_value={
+            "capacity_boost": "13",
+            "comfort_bath": "8",
+            "ambient_tracking": "9",
+        },
+    ),
+)
+
+SELECTS_BY_DEVICE_TYPE = {
+    DEVICE_TYPE_AIR_CONDITIONER: SELECTS,
+    DEVICE_TYPE_WATER_HEATER: WATER_HEATER_SELECTS,
+}
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: JdSmartConfigEntry,
@@ -42,8 +66,7 @@ async def async_setup_entry(
     async_add_entities(
         JdSmartSelect(coordinator, description)
         for coordinator in entry.runtime_data.coordinators.values()
-        if coordinator.device_type == DEVICE_TYPE_AIR_CONDITIONER
-        for description in SELECTS
+        for description in SELECTS_BY_DEVICE_TYPE.get(coordinator.device_type, ())
         if (
             coordinator.data is None
             or description.stream_id in coordinator.data.streams

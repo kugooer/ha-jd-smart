@@ -138,6 +138,14 @@
                     "direct": "定向",
                     "swing": "扫风"
                 }
+            },
+            "water_heater_mode": {
+                "name": "模式",
+                "state": {
+                    "capacity_boost": "增容",
+                    "comfort_bath": "舒适浴",
+                    "ambient_tracking": "随温感"
+                }
             }
         },
         "sensor": {

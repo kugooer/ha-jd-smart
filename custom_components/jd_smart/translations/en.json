@@ -138,6 +138,14 @@
                     "direct": "Direct",
                     "swing": "Swing"
                 }
+            },
+            "water_heater_mode": {
+                "name": "Mode",
+                "state": {
+                    "capacity_boost": "Capacity boost",
+                    "comfort_bath": "Comfort bath",
+                    "ambient_tracking": "Ambient tracking"
+                }
             }
         },
         "sensor": {
