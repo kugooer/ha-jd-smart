@@ -25,6 +25,9 @@ class JdSmartSensorDescription(SensorEntityDescription):
     """JD Smart sensor description."""
 
     stream_id: str
+    # Raw stream values are often numeric codes; map them to enum options so
+    # the entity reports a readable state instead of a bare number.
+    value_map: dict[str, str] | None = None
 
 
 SENSORS: tuple[JdSmartSensorDescription, ...] = (
@@ -105,6 +108,9 @@ WATER_HEATER_SENSORS: tuple[JdSmartSensorDescription, ...] = (
         key="flow_state",
         stream_id="FlowState",
         translation_key="flow_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=["off", "on"],
+        value_map={"0": "off", "1": "on"},
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     JdSmartSensorDescription(
@@ -178,8 +184,10 @@ class JdSmartSensor(JdSmartEntity, SensorEntity):
     def native_value(self) -> str | float | None:
         """Return sensor value."""
         value = self.streams.get(self.entity_description.stream_id)
-        if value == "":
+        if value in (None, ""):
             return None
+        if value_map := self.entity_description.value_map:
+            return value_map.get(str(value))
         if self.entity_description.state_class is not None:
             try:
                 return float(value)

@@ -160,7 +160,11 @@
                 "name": "Error code"
             },
             "flow_state": {
-                "name": "Water flow state"
+                "name": "Water flow state",
+                "state": {
+                    "off": "Water off",
+                    "on": "Water flowing"
+                }
             },
             "insulation_remain_time": {
                 "name": "Insulation remaining time"

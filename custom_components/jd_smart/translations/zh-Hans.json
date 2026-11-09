@@ -160,7 +160,11 @@
                 "name": "故障码"
             },
             "flow_state": {
-                "name": "水流状态"
+                "name": "水流状态",
+                "state": {
+                    "off": "关水",
+                    "on": "开水"
+                }
             },
             "insulation_remain_time": {
                 "name": "保温剩余时间"
