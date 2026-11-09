@@ -39,6 +39,14 @@ SWITCHES: tuple[JdSmartSwitchDescription, ...] = (
 # one-shot circulation, turbo boost, tap-to-start circulation, all-day
 # circulation and disinfection.
 WATER_HEATER_SWITCHES: tuple[JdSmartSwitchDescription, ...] = (
+    # Power is the master on/off for the heater. The water_heater entity
+    # exposes the same stream, but a plain switch is easier to put on a
+    # dashboard or wire into automations.
+    JdSmartSwitchDescription(
+        key="power",
+        stream_id="Power",
+        translation_key="power",
+    ),
     # CruiseMode is the app's "单次" (single circulation) action: writing 1
     # starts one preheat cycle (pump on, water flows, heater works) and
     # writing 0 cancels it. The device clears it on its own when the cycle

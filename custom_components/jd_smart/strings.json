@@ -227,6 +227,9 @@
             "instant_heat": {
                 "name": "Tap-to-start heating"
             },
+            "power": {
+                "name": "Power"
+            },
             "powerful": {
                 "name": "Powerful"
             },

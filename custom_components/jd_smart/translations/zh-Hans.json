@@ -227,6 +227,9 @@
             "instant_heat": {
                 "name": "点动"
             },
+            "power": {
+                "name": "电源"
+            },
             "powerful": {
                 "name": "强力"
             },
