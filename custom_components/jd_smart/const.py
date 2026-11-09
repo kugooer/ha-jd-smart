@@ -57,10 +57,24 @@ ATTR_MANUFACTURER = "JD Smart"
 UPDATE_AUTH_FAILURE_THRESHOLD = 3
 
 DEVICE_TYPE_AIR_CONDITIONER = "air_conditioner"
+DEVICE_TYPE_WATER_HEATER = "water_heater"
 DEVICE_TYPE_BY_CATEGORY = {
     "101001": DEVICE_TYPE_AIR_CONDITIONER,
+    "101010": DEVICE_TYPE_WATER_HEATER,
 }
 AIR_CONDITIONER_REQUIRED_STREAMS = frozenset({"power", "mode", "settemp"})
+# Gas water heaters report upper-case stream ids and only need power plus the
+# temperature setpoint to expose a usable water heater entity.
+WATER_HEATER_REQUIRED_STREAMS = frozenset({"Power", "TemperatureSet"})
+REQUIRED_STREAMS_BY_DEVICE_TYPE = {
+    DEVICE_TYPE_AIR_CONDITIONER: AIR_CONDITIONER_REQUIRED_STREAMS,
+    DEVICE_TYPE_WATER_HEATER: WATER_HEATER_REQUIRED_STREAMS,
+}
+# The DL1S manual (page 15) documents a 32-60 degree range: one degree steps
+# up to 48 degrees, three degree steps above it. Home Assistant only supports a
+# single step, so one degree is used and the device clamps the rest.
+WATER_HEATER_MIN_TEMP = 32
+WATER_HEATER_MAX_TEMP = 60
 PULL_REQUEST_URL = "https://github.com/orangeboyChen/ha-jd-smart/pulls"
 
 

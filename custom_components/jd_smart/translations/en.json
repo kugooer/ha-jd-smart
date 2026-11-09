@@ -4,7 +4,7 @@
             "already_configured": "Device is already configured",
             "auth_refreshed": "JD Smart authentication was refreshed successfully.",
             "auth_updated": "JD Smart authentication was updated successfully.",
-            "no_devices": "No new air conditioners were found. Already configured devices are hidden."
+            "no_devices": "No new devices were found. Already configured devices are hidden."
         },
         "error": {
             "cannot_connect": "Failed to connect",
@@ -69,7 +69,7 @@
                 "data": {
                     "selected_devices": "Devices"
                 },
-                "description": "Select one or more air conditioners to add. Already configured devices are hidden."
+                "description": "Select one or more devices to add. Already configured devices are hidden."
             }
         }
     },
@@ -120,6 +120,17 @@
                 }
             }
         },
+        "number": {
+            "circulation_duration": {
+                "name": "Circulation duration"
+            },
+            "insulation_difference": {
+                "name": "Insulation temperature difference"
+            },
+            "insulation_duration": {
+                "name": "Insulation duration"
+            }
+        },
         "select": {
             "horizontal_direction": {
                 "name": "Horizontal direction",
@@ -133,17 +144,38 @@
             "clean_runtime": {
                 "name": "Clean runtime"
             },
+            "cruise_mode": {
+                "name": "Circulation mode"
+            },
             "current_humidity": {
                 "name": "Current humidity"
             },
             "current_temperature": {
                 "name": "Current temperature"
             },
+            "env_temperature_raw": {
+                "name": "Env temperature (raw)"
+            },
+            "error_code": {
+                "name": "Error code"
+            },
+            "flow_state": {
+                "name": "Water flow state"
+            },
+            "insulation_remain_time": {
+                "name": "Insulation remaining time"
+            },
             "mdp_mode": {
                 "name": "MDP mode"
             },
             "protection_state": {
                 "name": "Protection state"
+            },
+            "pump_state": {
+                "name": "Circulation pump state"
+            },
+            "run_state": {
+                "name": "Run state"
             },
             "runtime_total": {
                 "name": "Runtime total"
@@ -156,14 +188,31 @@
             }
         },
         "switch": {
+            "all_day_circulation": {
+                "name": "All-day circulation"
+            },
             "backlight": {
                 "name": "Backlight"
+            },
+            "cruise_disinfection": {
+                "name": "Cruise disinfection"
             },
             "display": {
                 "name": "Display"
             },
+            "instant_heat": {
+                "name": "Tap-to-start heating"
+            },
             "powerful": {
                 "name": "Powerful"
+            },
+            "turbo_boost": {
+                "name": "Turbo boost"
+            }
+        },
+        "water_heater": {
+            "water_heater": {
+                "name": "Water heater"
             }
         }
     }

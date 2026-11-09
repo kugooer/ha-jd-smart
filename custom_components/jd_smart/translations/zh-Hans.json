@@ -4,7 +4,7 @@
             "already_configured": "设备已经配置",
             "auth_refreshed": "京东小家鉴权信息刷新成功。",
             "auth_updated": "京东小家鉴权信息更新成功。",
-            "no_devices": "没有发现新的空调设备。已配置的设备会被隐藏。"
+            "no_devices": "没有发现新的设备。已配置的设备会被隐藏。"
         },
         "error": {
             "cannot_connect": "连接失败",
@@ -69,7 +69,7 @@
                 "data": {
                     "selected_devices": "设备"
                 },
-                "description": "选择一个或多个要添加的空调设备。已配置的设备会被隐藏。"
+                "description": "选择一个或多个要添加的设备。已配置的设备会被隐藏。"
             }
         }
     },
@@ -120,6 +120,17 @@
                 }
             }
         },
+        "number": {
+            "circulation_duration": {
+                "name": "循环时长"
+            },
+            "insulation_difference": {
+                "name": "保温温差"
+            },
+            "insulation_duration": {
+                "name": "保温时长"
+            }
+        },
         "select": {
             "horizontal_direction": {
                 "name": "左右风",
@@ -133,17 +144,38 @@
             "clean_runtime": {
                 "name": "清洁累计时间"
             },
+            "cruise_mode": {
+                "name": "循环模式"
+            },
             "current_humidity": {
                 "name": "当前湿度"
             },
             "current_temperature": {
                 "name": "当前温度"
             },
+            "env_temperature_raw": {
+                "name": "环境温度（原始值）"
+            },
+            "error_code": {
+                "name": "故障码"
+            },
+            "flow_state": {
+                "name": "水流状态"
+            },
+            "insulation_remain_time": {
+                "name": "保温剩余时间"
+            },
             "mdp_mode": {
                 "name": "MDP 模式"
             },
             "protection_state": {
                 "name": "保护状态"
+            },
+            "pump_state": {
+                "name": "循环泵状态"
+            },
+            "run_state": {
+                "name": "运行状态"
             },
             "runtime_total": {
                 "name": "运行总时长"
@@ -156,14 +188,31 @@
             }
         },
         "switch": {
+            "all_day_circulation": {
+                "name": "全天循环"
+            },
             "backlight": {
                 "name": "背光灯"
+            },
+            "cruise_disinfection": {
+                "name": "巡航杀菌"
             },
             "display": {
                 "name": "屏显"
             },
+            "instant_heat": {
+                "name": "点动"
+            },
             "powerful": {
                 "name": "强力"
+            },
+            "turbo_boost": {
+                "name": "增压"
+            }
+        },
+        "water_heater": {
+            "water_heater": {
+                "name": "燃气热水器"
             }
         }
     }

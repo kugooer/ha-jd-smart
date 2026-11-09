@@ -16,7 +16,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import JdSmartConfigEntry
-from .const import DEVICE_TYPE_AIR_CONDITIONER
+from .const import DEVICE_TYPE_AIR_CONDITIONER, DEVICE_TYPE_WATER_HEATER
 from .entity import JdSmartEntity
 
 
@@ -88,6 +88,60 @@ SENSORS: tuple[JdSmartSensorDescription, ...] = (
 )
 
 
+WATER_HEATER_SENSORS: tuple[JdSmartSensorDescription, ...] = (
+    JdSmartSensorDescription(
+        key="error",
+        stream_id="Error",
+        translation_key="error_code",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
+        key="state",
+        stream_id="State",
+        translation_key="run_state",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
+        key="flow_state",
+        stream_id="FlowState",
+        translation_key="flow_state",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
+        key="pump_state",
+        stream_id="PumpState",
+        translation_key="pump_state",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
+        key="cruise_mode",
+        stream_id="CruiseMode",
+        translation_key="cruise_mode",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
+        key="insulation_remain",
+        stream_id="InsulationRemainTime",
+        translation_key="insulation_remain_time",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    JdSmartSensorDescription(
+        key="env_temperature",
+        stream_id="EnvTemperature",
+        translation_key="env_temperature_raw",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+SENSORS_BY_DEVICE_TYPE = {
+    DEVICE_TYPE_AIR_CONDITIONER: SENSORS,
+    DEVICE_TYPE_WATER_HEATER: WATER_HEATER_SENSORS,
+}
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: JdSmartConfigEntry,
@@ -97,8 +151,7 @@ async def async_setup_entry(
     async_add_entities(
         JdSmartSensor(coordinator, description)
         for coordinator in entry.runtime_data.coordinators.values()
-        if coordinator.device_type == DEVICE_TYPE_AIR_CONDITIONER
-        for description in SENSORS
+        for description in SENSORS_BY_DEVICE_TYPE.get(coordinator.device_type, ())
         if (
             coordinator.data is None
             or description.stream_id in coordinator.data.streams

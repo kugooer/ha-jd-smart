@@ -10,7 +10,6 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import JdSmartClient, JdSmartCredentials, JdSmartDeviceProfile
 from .const import (
-    AIR_CONDITIONER_REQUIRED_STREAMS,
     CONF_APP_VERSION,
     CONF_CATEGORY_ID,
     CONF_CATEGORY_NAME,
@@ -39,6 +38,7 @@ from .const import (
     DEVICE_TYPE_AIR_CONDITIONER,
     DOMAIN,
     PULL_REQUEST_URL,
+    REQUIRED_STREAMS_BY_DEVICE_TYPE,
 )
 from .coordinator import (
     JdSmartAuthRetryManager,
@@ -49,8 +49,10 @@ from .coordinator import (
 
 PLATFORMS: list[Platform] = [
     Platform.CLIMATE,
+    Platform.WATER_HEATER,
     Platform.SWITCH,
     Platform.SELECT,
+    Platform.NUMBER,
     Platform.SENSOR,
 ]
 
@@ -100,10 +102,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: JdSmartConfigEntry) -> b
             else:
                 if _is_unsupported_stream_layout(device, coordinator):
                     _notify_unsupported_stream_layout(hass, device, coordinator)
-                elif (
-                    device.get(CONF_DEVICE_TYPE, DEVICE_TYPE_AIR_CONDITIONER)
-                    == DEVICE_TYPE_AIR_CONDITIONER
-                ):
+                elif _is_supported_device_type(device):
                     persistent_notification.async_dismiss(
                         hass,
                         _unsupported_stream_layout_notification_id(coordinator.feed_id),
@@ -150,15 +149,25 @@ def _entry_devices(data: dict) -> list[dict[str, str]]:
     ]
 
 
+def _device_type_of(device: dict[str, str]) -> str:
+    """Return the stored device type, defaulting to air conditioner."""
+    return device.get(CONF_DEVICE_TYPE, DEVICE_TYPE_AIR_CONDITIONER)
+
+
+def _is_supported_device_type(device: dict[str, str]) -> bool:
+    """Return whether the device type has a stream layout definition."""
+    return _device_type_of(device) in REQUIRED_STREAMS_BY_DEVICE_TYPE
+
+
 def _is_unsupported_stream_layout(
     device: dict[str, str], coordinator: JdSmartCoordinator
 ) -> bool:
     """Return whether a recognized device has no usable entity handler."""
+    required_streams = REQUIRED_STREAMS_BY_DEVICE_TYPE.get(_device_type_of(device))
     return (
-        device.get(CONF_DEVICE_TYPE, DEVICE_TYPE_AIR_CONDITIONER)
-        == DEVICE_TYPE_AIR_CONDITIONER
+        required_streams is not None
         and coordinator.data is not None
-        and not AIR_CONDITIONER_REQUIRED_STREAMS <= coordinator.data.streams.keys()
+        and not required_streams <= coordinator.data.streams.keys()
     )
 
 

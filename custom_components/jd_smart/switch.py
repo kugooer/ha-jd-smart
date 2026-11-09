@@ -8,10 +8,11 @@ from typing import Any
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import JdSmartConfigEntry
-from .const import DEVICE_TYPE_AIR_CONDITIONER
+from .const import DEVICE_TYPE_AIR_CONDITIONER, DEVICE_TYPE_WATER_HEATER
 from .entity import JdSmartEntity
 
 
@@ -34,6 +35,40 @@ SWITCHES: tuple[JdSmartSwitchDescription, ...] = (
     ),
 )
 
+# Gas water heaters expose these 0/1 streams as on/off toggles in the app:
+# turbo boost, tap-to-start circulation, all-day circulation and disinfection.
+WATER_HEATER_SWITCHES: tuple[JdSmartSwitchDescription, ...] = (
+    JdSmartSwitchDescription(
+        key="turbo_power",
+        stream_id="TurboPower",
+        translation_key="turbo_boost",
+        entity_category=EntityCategory.CONFIG,
+    ),
+    JdSmartSwitchDescription(
+        key="instant_heat",
+        stream_id="ActiononOff",
+        translation_key="instant_heat",
+        entity_category=EntityCategory.CONFIG,
+    ),
+    JdSmartSwitchDescription(
+        key="all_day_power",
+        stream_id="AllDayPower",
+        translation_key="all_day_circulation",
+        entity_category=EntityCategory.CONFIG,
+    ),
+    JdSmartSwitchDescription(
+        key="disinfect",
+        stream_id="Disinfect",
+        translation_key="cruise_disinfection",
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
+SWITCHES_BY_DEVICE_TYPE = {
+    DEVICE_TYPE_AIR_CONDITIONER: SWITCHES,
+    DEVICE_TYPE_WATER_HEATER: WATER_HEATER_SWITCHES,
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -44,8 +79,7 @@ async def async_setup_entry(
     async_add_entities(
         JdSmartSwitch(coordinator, description)
         for coordinator in entry.runtime_data.coordinators.values()
-        if coordinator.device_type == DEVICE_TYPE_AIR_CONDITIONER
-        for description in SWITCHES
+        for description in SWITCHES_BY_DEVICE_TYPE.get(coordinator.device_type, ())
         if (
             coordinator.data is None
             or description.stream_id in coordinator.data.streams

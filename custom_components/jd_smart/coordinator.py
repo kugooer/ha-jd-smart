@@ -249,7 +249,7 @@ class JdSmartCoordinator(DataUpdateCoordinator[JdSmartSnapshot]):
             snapshot = await self.client.async_get_snapshot(self.feed_id, digest)
             self._consecutive_update_failures = 0
             self.auth_retry_manager.async_mark_recovered()
-            return snapshot
+            return self._merge_snapshot(snapshot)
         except JdSmartAuthError as err:
             LOGGER.info("JD Smart snapshot authentication failed; refreshing token")
             if not await self.auth_retry_manager.async_handle_auth_failure(
@@ -269,7 +269,7 @@ class JdSmartCoordinator(DataUpdateCoordinator[JdSmartSnapshot]):
                 ) from retry_err
             self._consecutive_update_failures = 0
             self.auth_retry_manager.async_mark_recovered()
-            return snapshot
+            return self._merge_snapshot(snapshot)
         except JdSmartCannotConnectError as err:
             if self.data is None:
                 raise ConfigEntryNotReady from err
@@ -287,6 +287,23 @@ class JdSmartCoordinator(DataUpdateCoordinator[JdSmartSnapshot]):
         except JdSmartError as err:
             await self._async_handle_update_failure(err)
         raise UpdateFailed("Unable to update JD Smart")
+
+    def _merge_snapshot(self, snapshot: JdSmartSnapshot) -> JdSmartSnapshot:
+        """Overlay a snapshot onto the last known streams.
+
+        Requesting a snapshot with the previous digest lets the cloud answer
+        without a stream list, and a control reply only contains the streams it
+        changed. Treating either as a full snapshot would blank out entities,
+        so unknown or unchanged streams keep their previous values.
+        """
+        if self.data is None:
+            return snapshot
+        return JdSmartSnapshot(
+            digest=snapshot.digest or self.data.digest,
+            status=snapshot.status or self.data.status,
+            from_device_success=snapshot.from_device_success,
+            streams={**self.data.streams, **snapshot.streams},
+        )
 
     async def async_control_streams(self, commands: dict[str, object]) -> None:
         """Control streams and refresh state."""
@@ -329,8 +346,11 @@ class JdSmartCoordinator(DataUpdateCoordinator[JdSmartSnapshot]):
                 err,
             )
             raise UpdateFailed("Unable to control JD Smart") from err
+        # A control reply usually carries only the changed streams; replacing
+        # the whole snapshot with it would blank out the untouched entities
+        # until the next poll, so merge it into the known state instead.
         if snapshot is not None:
-            self.async_set_updated_data(snapshot)
+            self.async_set_updated_data(self._merge_snapshot(snapshot))
         self.trigger_fast_polling()
         await self.async_request_refresh()
 
