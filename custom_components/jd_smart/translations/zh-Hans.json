@@ -174,8 +174,8 @@
             "flow_state": {
                 "name": "水流状态",
                 "state": {
-                    "off": "关水",
-                    "on": "开水"
+                    "off": "关",
+                    "on": "开"
                 }
             },
             "insulation_remain_time": {

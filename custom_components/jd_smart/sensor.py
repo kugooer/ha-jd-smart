@@ -28,6 +28,9 @@ class JdSmartSensorDescription(SensorEntityDescription):
     # Raw stream values are often numeric codes; map them to enum options so
     # the entity reports a readable state instead of a bare number.
     value_map: dict[str, str] | None = None
+    # Some streams only show up in incremental snapshots once they change, so
+    # they would never get an entity if creation depended on the first poll.
+    always_create: bool = False
 
 
 SENSORS: tuple[JdSmartSensorDescription, ...] = (
@@ -123,6 +126,7 @@ WATER_HEATER_SENSORS: tuple[JdSmartSensorDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=["stopped", "running"],
         value_map={"0": "stopped", "1": "running"},
+        always_create=True,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     JdSmartSensorDescription(
@@ -168,7 +172,8 @@ async def async_setup_entry(
         for coordinator in entry.runtime_data.coordinators.values()
         for description in SENSORS_BY_DEVICE_TYPE.get(coordinator.device_type, ())
         if (
-            coordinator.data is None
+            description.always_create
+            or coordinator.data is None
             or description.stream_id in coordinator.data.streams
         )
     )
