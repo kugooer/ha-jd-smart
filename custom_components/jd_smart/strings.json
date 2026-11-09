@@ -179,7 +179,11 @@
                 "name": "Circulation pump state"
             },
             "run_state": {
-                "name": "Run state"
+                "name": "Run state",
+                "state": {
+                    "working": "Working",
+                    "standby": "Standby"
+                }
             },
             "runtime_total": {
                 "name": "Runtime total"

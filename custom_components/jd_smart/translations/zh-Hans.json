@@ -179,7 +179,11 @@
                 "name": "循环泵状态"
             },
             "run_state": {
-                "name": "运行状态"
+                "name": "运行状态",
+                "state": {
+                    "working": "工作",
+                    "standby": "待机"
+                }
             },
             "runtime_total": {
                 "name": "运行总时长"
