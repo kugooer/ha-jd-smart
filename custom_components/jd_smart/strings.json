@@ -144,9 +144,6 @@
             "clean_runtime": {
                 "name": "Clean runtime"
             },
-            "cruise_mode": {
-                "name": "Circulation mode"
-            },
             "current_humidity": {
                 "name": "Current humidity"
             },
@@ -176,7 +173,11 @@
                 "name": "Protection state"
             },
             "pump_state": {
-                "name": "Circulation pump state"
+                "name": "Circulation pump state",
+                "state": {
+                    "stopped": "Stopped",
+                    "running": "Running"
+                }
             },
             "run_state": {
                 "name": "Run state",
@@ -213,6 +214,9 @@
             },
             "powerful": {
                 "name": "Powerful"
+            },
+            "single_circulation": {
+                "name": "Single circulation"
             },
             "turbo_boost": {
                 "name": "Turbo boost"

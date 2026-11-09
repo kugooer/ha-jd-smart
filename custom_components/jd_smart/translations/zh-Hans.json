@@ -144,9 +144,6 @@
             "clean_runtime": {
                 "name": "清洁累计时间"
             },
-            "cruise_mode": {
-                "name": "循环模式"
-            },
             "current_humidity": {
                 "name": "当前湿度"
             },
@@ -176,7 +173,11 @@
                 "name": "保护状态"
             },
             "pump_state": {
-                "name": "循环泵状态"
+                "name": "循环泵状态",
+                "state": {
+                    "stopped": "停转",
+                    "running": "运转"
+                }
             },
             "run_state": {
                 "name": "运行状态",
@@ -213,6 +214,9 @@
             },
             "powerful": {
                 "name": "强力"
+            },
+            "single_circulation": {
+                "name": "单次循环"
             },
             "turbo_boost": {
                 "name": "增压"

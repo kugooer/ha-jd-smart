@@ -36,8 +36,19 @@ SWITCHES: tuple[JdSmartSwitchDescription, ...] = (
 )
 
 # Gas water heaters expose these 0/1 streams as on/off toggles in the app:
-# turbo boost, tap-to-start circulation, all-day circulation and disinfection.
+# one-shot circulation, turbo boost, tap-to-start circulation, all-day
+# circulation and disinfection.
 WATER_HEATER_SWITCHES: tuple[JdSmartSwitchDescription, ...] = (
+    # CruiseMode is the app's "单次" (single circulation) action: writing 1
+    # starts one preheat cycle (pump on, water flows, heater works) and
+    # writing 0 cancels it. The device clears it on its own when the cycle
+    # ends, so the switch follows the reported state.
+    JdSmartSwitchDescription(
+        key="single_circulation",
+        stream_id="CruiseMode",
+        translation_key="single_circulation",
+        entity_category=EntityCategory.CONFIG,
+    ),
     JdSmartSwitchDescription(
         key="turbo_power",
         stream_id="TurboPower",
