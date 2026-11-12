@@ -116,6 +116,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: JdSmartConfigEntry) -> b
         coordinators=coordinators,
         auth_retry_manager=auth_retry_manager,
     )
+    # Keep the login token alive instead of waiting for it to expire.
+    auth_retry_manager.async_start_proactive_refresh()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

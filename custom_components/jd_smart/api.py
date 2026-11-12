@@ -62,6 +62,35 @@ WANGYIN_SEED_WRAP_KEY = bytes.fromhex(
 # fast and retrying.
 REQUEST_TIMEOUT = ClientTimeout(total=30, sock_connect=10)
 
+# The cloud reports an expired login inside a normal HTTP 200 JSON body:
+#   {"error": {"errorCode": -4, "errorInfo": "登录已过期，请重新登录"}, "status": -4}
+# Only "401" used to be treated as an authentication failure, so expiry fell
+# through to the generic error path: the coordinator merely counted failures
+# and eventually asked for reauthentication without ever refreshing the token.
+AUTH_ERROR_CODES = frozenset({"401", "-4"})
+AUTH_ERROR_KEYWORDS = (
+    "登录已过期",
+    "请重新登录",
+    "登录已失效",
+    "未登录",
+    "登录失败",
+    "login expired",
+    "not logged in",
+    "token expired",
+    "invalid token",
+    "unauthorized",
+)
+
+
+def _is_auth_error(error_code: str, error_info: str, status: object) -> bool:
+    """Return whether an API error payload means the login has expired."""
+    if error_code in AUTH_ERROR_CODES:
+        return True
+    if status is not None and str(status).strip() in AUTH_ERROR_CODES:
+        return True
+    text = (error_info or "").lower()
+    return any(keyword in text for keyword in AUTH_ERROR_KEYWORDS)
+
 
 class JdSmartError(Exception):
     """Base JD Smart error."""
@@ -776,6 +805,13 @@ class JdSmartClient:
                         headers=response.headers,
                     )
         except ClientResponseError as err:
+            # An expired login is normally reported inside a 200 body, but a
+            # token-aware gateway may answer 401/403; keep that on the auth
+            # path so the token gets refreshed instead of being retried.
+            if err.status in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN):
+                raise JdSmartAuthError(
+                    f"JD Smart HTTP status: {err.status}"
+                ) from err
             raise JdSmartCannotConnectError(
                 f"JD Smart HTTP status: {err.status}"
             ) from err
@@ -796,24 +832,31 @@ class JdSmartClient:
         if error:
             error_code = str(error.get("errorCode", ""))
             error_info = error.get("errorInfo", "JD Smart API error")
+            status = payload.get("status")
             LOGGER.warning(
                 "JD Smart API error: path=%s, code=%s, info=%s, status=%s",
                 url.split("?", 1)[0],
                 error_code,
                 error_info,
-                payload.get("status"),
+                status,
             )
-            if error_code == "401":
+            if _is_auth_error(error_code, error_info, status):
                 raise JdSmartAuthError(error_info)
             raise JdSmartError(error_info)
-        if payload.get("status") not in (0, "0"):
+        status = payload.get("status")
+        if status not in (0, "0"):
             LOGGER.warning(
                 "JD Smart unexpected status: path=%s, status=%s, payload=%s",
                 url.split("?", 1)[0],
-                payload.get("status"),
+                status,
                 _truncate(json.dumps(payload, ensure_ascii=False)),
             )
-            raise JdSmartError(f"Unexpected status: {payload.get('status')}")
+            # Some responses only carry the status field; treat an expired
+            # login there as an authentication failure too.
+            status_text = str(payload.get("msg") or "")
+            if _is_auth_error("", status_text, status):
+                raise JdSmartAuthError(status_text or f"status {status}")
+            raise JdSmartError(f"Unexpected status: {status}")
         return payload
 
     async def async_refresh_token(self) -> tuple[str, str]:

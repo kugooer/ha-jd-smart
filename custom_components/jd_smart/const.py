@@ -16,6 +16,11 @@ AUTH_REFRESH_RETRY_DELAYS = (
     timedelta(minutes=40),
     timedelta(minutes=60),
 )
+# Refreshing only after the cloud rejects a poll means the token has already
+# expired once, and a token that sat unused past the server side refresh window
+# can no longer be renewed at all. Extending it while it is still valid keeps
+# the integration independent of the account's login lifetime.
+PROACTIVE_REFRESH_INTERVAL = timedelta(hours=12)
 
 CONF_APP_VERSION = "app_version"
 CONF_CATEGORY_ID = "category_id"

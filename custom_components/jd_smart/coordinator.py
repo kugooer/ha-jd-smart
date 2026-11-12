@@ -32,6 +32,7 @@ from .const import (
     FAST_POLL_DURATION,
     FAST_POLL_INTERVAL,
     LOGGER,
+    PROACTIVE_REFRESH_INTERVAL,
     UPDATE_AUTH_FAILURE_THRESHOLD,
     auth_refresh_notification_ids,
 )
@@ -64,6 +65,7 @@ class JdSmartAuthRetryManager:
         self._coordinators: list[JdSmartCoordinator] = []
         self._refresh_lock = asyncio.Lock()
         self._retry_cancel: Callable[[], None] | None = None
+        self._proactive_cancel: Callable[[], None] | None = None
         self._failure_count = 0
         self._validating_refresh = False
         self._shutdown = False
@@ -161,6 +163,70 @@ class JdSmartAuthRetryManager:
         self._async_dismiss_notifications()
 
     @callback
+    def async_start_proactive_refresh(self) -> None:
+        """Start the periodic token refresh.
+
+        Refreshing reactively only happens after the cloud already rejected a
+        poll, and a token that expired past the server side refresh window
+        cannot be renewed at all. Extending it on a schedule keeps the entry
+        alive without waiting for a failure.
+        """
+        if self._proactive_cancel is not None or self._shutdown:
+            return
+        self._async_schedule_proactive(
+            dt_util.utcnow() + PROACTIVE_REFRESH_INTERVAL
+        )
+        LOGGER.debug(
+            "JD Smart proactive token refresh scheduled every %s",
+            PROACTIVE_REFRESH_INTERVAL,
+        )
+
+    @callback
+    def _async_schedule_proactive(self, when: datetime) -> None:
+        """Schedule the next proactive refresh attempt."""
+        self._proactive_cancel = async_track_point_in_utc_time(
+            self.hass,
+            self._async_proactive_callback,
+            when,
+        )
+
+    @callback
+    def _async_proactive_callback(self, _now: datetime) -> None:
+        """Start a scheduled proactive refresh."""
+        self._proactive_cancel = None
+        self.hass.async_create_task(self._async_proactive_refresh())
+
+    async def _async_proactive_refresh(self) -> None:
+        """Extend the token before it expires, without touching entities."""
+        refreshed = False
+        try:
+            async with self._refresh_lock:
+                if self._shutdown:
+                    return
+                if self._retry_cancel is not None or self._validating_refresh:
+                    # A reactive refresh is already in flight or pending.
+                    LOGGER.debug("JD Smart proactive refresh skipped")
+                    return
+                refreshed = await self._async_refresh_locked()
+        finally:
+            if not self._shutdown:
+                self._async_schedule_proactive(
+                    dt_util.utcnow() + PROACTIVE_REFRESH_INTERVAL
+                )
+        if not refreshed or not self._coordinators:
+            return
+        # Validate the refreshed token and clear the pending-refresh flag; a
+        # failed validation is reported by the regular retry schedule and does
+        # not make the entities unavailable in the meantime.
+        try:
+            await self._coordinators[0].async_request_refresh()
+        except Exception as err:  # noqa: BLE001
+            LOGGER.warning("JD Smart post-refresh validation failed: %s", err)
+            self.async_schedule_failure(err)
+        else:
+            LOGGER.info("JD Smart proactive token refresh completed")
+
+    @callback
     def _async_dismiss_notifications(self) -> None:
         """Dismiss current and legacy authentication notifications."""
         feed_ids = tuple(coordinator.feed_id for coordinator in self._coordinators)
@@ -205,6 +271,9 @@ class JdSmartAuthRetryManager:
         if self._retry_cancel:
             self._retry_cancel()
             self._retry_cancel = None
+        if self._proactive_cancel:
+            self._proactive_cancel()
+            self._proactive_cancel = None
 
 
 class JdSmartCoordinator(DataUpdateCoordinator[JdSmartSnapshot]):
